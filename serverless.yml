@@ -1,0 +1,23 @@
+service: fragments-service
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+
+  iam:
+    role: arn:aws:iam::${aws:accountId}:role/LabRole
+
+functions:
+  fragments:
+    handler: src/index.handler
+    events:
+      - httpApi:
+          path: /
+          method: any
+      - httpApi:
+          path: /{proxy+}
+          method: any
+
+plugins:
+  - serverless-offline 
