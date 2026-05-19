@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "debug": "pino-pretty src/server.js",
     "test": "jest --runInBand --detectOpenHandles --forceExit",
-    "coverage": "jest --coverage --runInBand --detectOpenHandles --forceExit"
+    "coverage": "jest --coverage --runInBand --detectOpenHandles --forceExit",
+    "lint": "eslint src/"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -23,6 +24,7 @@
     "pino-pretty": "^10.2.0"
   },
   "devDependencies": {
+    "eslint": "^8.57.0",
     "jest": "^29.6.4",
     "supertest": "^6.3.4"
   }
