@@ -1,0 +1,31 @@
+# Build and serve fragments-ui with Parcel
+
+FROM node:18-bullseye
+
+LABEL maintainer="David Humphrey <david.humphrey@senecapolytechnic.ca>"
+LABEL description="Fragments UI testing web app"
+
+# Reduce npm spam when installing within Docker
+# https://docs.npmjs.com/cli/v8/using-npm/config#loglevel
+ENV NPM_CONFIG_LOGLEVEL=warn
+# Disable colour when run inside Docker
+# https://docs.npmjs.com/cli/v8/using-npm/config#color
+ENV NPM_CONFIG_COLOR=false
+
+# Use /app as our working directory
+WORKDIR /app
+
+# Copy our package.json/package-lock.json in
+COPY package* .
+
+# Install node dependencies defined in package.json and package-lock.json
+RUN npm ci
+
+# Copy everything else into /app
+COPY . .
+
+# Run the server
+CMD npm run serve
+
+# We default to use port 1234
+EXPOSE 1234
