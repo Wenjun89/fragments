@@ -1,0 +1,19 @@
+services:
+  fragments:
+    # Build our Dockerfile
+    build: .
+    init: true
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - FRAGMENTS_LOG_LEVEL=info
+      - HTPASSWD_FILE=tests/.htpasswd
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      # Run the nginx server on port 80 (change this to whatever you want)
+      - "80:80"
+    volumes:
+      # Override the default server config with our own nginx-proxy.conf file
+      - ./nginx-proxy.conf:/etc/nginx/conf.d/default.conf
