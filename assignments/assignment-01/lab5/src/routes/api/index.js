@@ -7,18 +7,19 @@ const router = express.Router();
 /**
  * GET /v1/fragments
  * Retrieves a list of fragments belonging to the authenticated user.
- * Supports an optional 'expand' query parameter to return full fragment details.
  */
 router.get('/fragments', async (req, res) => {
   try {
-    // Verify user authentication before proceeding
+    // 1. Verify user authentication
     if (!req.user) {
       return res.status(401).json(createErrorResponse(401, 'Unauthorized: User not authenticated'));
     }
 
+    // 2. Handle optional expand query parameter
     const expand = req.query.expand === '1';
     const fragments = await Fragment.byUser(req.user, expand);
     
+    // 3. Return success response
     res.status(200).json(createSuccessResponse({ fragments }));
   } catch (err) {
     console.error('Error retrieving fragments:', err);
@@ -51,7 +52,7 @@ router.post('/fragments', async (req, res) => {
     });
 
     // 4. Persist binary data and metadata
-    // Note: Ensure that express.raw() is configured in app.js for this to work with Buffers
+    // Note: Ensure express.raw() is configured in app.js/index.js
     await fragment.setData(req.body);
 
     // 5. Provide the location of the newly created resource
@@ -61,7 +62,6 @@ router.post('/fragments', async (req, res) => {
     // 6. Respond with 201 Created and the metadata
     res.status(201).json(createSuccessResponse({ fragment }));
   } catch (err) {
-    // Log the actual error for debugging purposes
     console.error('SERVER ERROR:', err);
     res.status(500).json(createErrorResponse(500, err.message || 'Unable to create fragment'));
   }
