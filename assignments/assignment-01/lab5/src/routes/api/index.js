@@ -28,6 +28,33 @@ router.get('/fragments', async (req, res) => {
 });
 
 /**
+ * GET /v1/fragments/:id/info
+ * Retrieves the metadata for a specific fragment.
+ */
+router.get('/fragments/:id/info', async (req, res) => {
+  try {
+    // 1. Verify user authentication
+    if (!req.user) {
+      return res.status(401).json(createErrorResponse(401, 'Unauthorized: User not authenticated'));
+    }
+
+    // 2. Retrieve the fragment by ID
+    const fragment = await Fragment.byId(req.user, req.params.id);
+
+    // 3. Handle non-existent fragment
+    if (!fragment) {
+      return res.status(404).json(createErrorResponse(404, 'Fragment not found'));
+    }
+
+    // 4. Return success response with metadata
+    res.status(200).json(createSuccessResponse({ fragment }));
+  } catch (err) {
+    console.error('Error retrieving fragment info:', err);
+    res.status(500).json(createErrorResponse(500, err.message || 'Unable to retrieve fragment info'));
+  }
+});
+
+/**
  * POST /v1/fragments
  * Creates a new fragment metadata instance and stores the associated binary data.
  */
@@ -52,7 +79,6 @@ router.post('/fragments', async (req, res) => {
     });
 
     // 4. Persist binary data and metadata
-    // Note: Ensure express.raw() is configured in app.js/index.js
     await fragment.setData(req.body);
 
     // 5. Provide the location of the newly created resource
