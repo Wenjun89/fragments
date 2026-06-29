@@ -7,30 +7,71 @@ jobs:
     name: Build Fragments UI
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
+      - run: npm install
+        working-directory: lab7/fragments-ui
+      - run: npm run build
         working-directory: lab7/fragments-ui
 
-      - name: Build project
-        run: npm run build
-        working-directory: lab7/fragments-ui
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+        working-directory: lab7/assignment-01/lab5
+      - run: npm run lint
+        working-directory: lab7/assignment-01/lab5
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+        working-directory: lab7/assignment-01/lab5
+      - run: npm test
+        working-directory: lab7/assignment-01/lab5
 
   dockerfile-lint:
     name: Dockerfile Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Lint Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: lab7/assignment-01/lab5/Dockerfile
+
+  docker-hub:
+    name: Build and Push to Docker Hub
+    needs: [lint, unit-tests, dockerfile-lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        env:
+          DOCKERHUB_REPO: wenjun89/fragments
+          SHA_TAG: sha-${{ github.sha }}
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: lab7/assignment-01/lab5/Dockerfile
+          push: true
+          tags: ${{ env.DOCKERHUB_REPO }}:${{ env.SHA_TAG }}, ${{ env.DOCKERHUB_REPO }}:main, ${{ env.DOCKERHUB_REPO }}:latest
