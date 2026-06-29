@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fragments UI - Michelle Wei</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; line-height: 1.5; color: #333; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-bottom: 20px; background: #fafafa; }
+    h1 { color: #007bff; }
+    button { 
+      padding: 10px 15px; 
+      background: #007bff; 
+      color: white; 
+      border: none; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-weight: bold;
+    }
+    button:hover { background: #0056b3; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; min-height: 40px; }
+    .hidden { display: none; }
+    .status-tag { font-weight: bold; color: #28a745; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Fragments Service Portal</h1>
+
+    <div class="card">
+      <h2>User Session</h2>
+      <p>Status: <span id="user-status">Checking...</span></p>
+      <button id="login">Login / Sign Up</button>
+      <button id="logout" class="hidden">Logout</button>
+    </div>
+
+    <div class="card">
+      <h2>Data Operations</h2>
+      <p>Click below to retrieve your fragments from the backend service:</p>
+      <button id="fetch-fragments" disabled>Fetch My Fragments</button>
+      
+      <h3>API Response:</h3>
+      <pre id="output">No data fetched yet.</pre>
+    </div>
+  </div>
+
+  <script type="module">
+    import { login, logout, getUser } from './auth.js';
+
+    const loginBtn = document.getElementById('login');
+    const logoutBtn = document.getElementById('logout');
+    const userStatus = document.getElementById('user-status');
+    const fetchBtn = document.getElementById('fetch-fragments');
+    const output = document.getElementById('output');
+
+    async function init() {
+      const user = await getUser();
+
+      if (user) {
+        userStatus.innerHTML = `<span class="status-tag">Logged in as Michelle</span>`;
+        loginBtn.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
+        fetchBtn.disabled = false; 
+      } else {
+        userStatus.innerText = 'Not logged in';
+        loginBtn.classList.remove('hidden');
+        logoutBtn.classList.add('hidden');
+        fetchBtn.disabled = true;
+      }
+    }
+
+    loginBtn.onclick = () => login();
+    logoutBtn.onclick = () => logout();
+
+    fetchBtn.onclick = async () => {
+      const user = await getUser();
+      if (!user) return;
+
+      console.log('--- YOUR ID TOKEN ---');
+      console.log(user.idToken);
+
+      output.innerText = "Requesting data from backend...";
+
+      try {
+        const res = await fetch('http://localhost:8080/v1/fragments', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${user.idToken}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Server Error ${res.status}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        output.innerText = JSON.stringify(data, null, 2);
+        console.log('Fetch successful:', data);
+
+      } catch (err) {
+        console.error('Fetch error:', err);
+        output.innerText = `Fetch Failed: ${err.message}`;
+      }
+    };
+
+    init();
+  </script>
+</body>
+</html>
