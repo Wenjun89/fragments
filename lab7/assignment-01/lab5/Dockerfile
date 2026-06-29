@@ -2,12 +2,11 @@ FROM node:22.12.0 AS builder
 
 WORKDIR /app
 
-# 注意：这里路径已经加上了子目录前缀
-COPY lab7/assignment-01/lab5/package*.json ./
+COPY package*.json ./
 RUN npm install
 
-COPY lab7/assignment-01/lab5/src ./src
-COPY lab7/assignment-01/lab5/tests/.htpasswd ./tests/.htpasswd
+COPY ./src ./src
+COPY ./tests/.htpasswd ./tests/.htpasswd
 
 FROM node:22.12.0-alpine
 
