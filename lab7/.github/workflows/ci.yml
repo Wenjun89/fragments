@@ -12,9 +12,9 @@ jobs:
         with:
           node-version: '20'
       - run: npm install
-        working-directory: fragments-ui
+        working-directory: lab7/fragments-ui
       - run: npm run build
-        working-directory: fragments-ui
+        working-directory: lab7/fragments-ui
 
   lint:
     name: Lint Code
@@ -25,9 +25,9 @@ jobs:
         with:
           node-version: '20'
       - run: npm install
-        working-directory: assignment-01/lab5
+        working-directory: lab7/assignment-01/lab5
       - run: npm run lint
-        working-directory: assignment-01/lab5
+        working-directory: lab7/assignment-01/lab5
 
   unit-tests:
     name: Unit Tests
@@ -38,9 +38,9 @@ jobs:
         with:
           node-version: '20'
       - run: npm install
-        working-directory: assignment-01/lab5
+        working-directory: lab7/assignment-01/lab5
       - run: npm test
-        working-directory: assignment-01/lab5
+        working-directory: lab7/assignment-01/lab5
 
   dockerfile-lint:
     name: Dockerfile Lint
@@ -50,7 +50,7 @@ jobs:
       - name: Lint Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: assignment-01/lab5/Dockerfile
+          dockerfile: lab7/assignment-01/lab5/Dockerfile
 
   docker-hub:
     name: Build and Push to Docker Hub
@@ -71,7 +71,7 @@ jobs:
           SHA_TAG: sha-${{ github.sha }}
         uses: docker/build-push-action@v7
         with:
-          context: assignment-01/lab5
-          file: assignment-01/lab5/Dockerfile
+          context: lab7/assignment-01/lab5
+          file: lab7/assignment-01/lab5/Dockerfile
           push: true
           tags: ${{ env.DOCKERHUB_REPO }}:${{ env.SHA_TAG }}, ${{ env.DOCKERHUB_REPO }}:main, ${{ env.DOCKERHUB_REPO }}:latest
