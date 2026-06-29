@@ -32,8 +32,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          context: . 
-          file: lab7/assignment-01/lab5/Dockerfile
+          # Point context to the specific lab directory to find the files
+          context: lab7/assignment-01/lab5
+          file: Dockerfile
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/fragments:${{ github.ref_name }}
             ${{ steps.login-ecr.outputs.registry }}/fragments:latest
