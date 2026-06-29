@@ -32,7 +32,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          # Point context to the specific lab directory to find the files
           context: lab7/assignment-01/lab5
           file: Dockerfile
           tags: |
