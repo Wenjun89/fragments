@@ -33,4 +33,4 @@ jobs:
       - name: Lint Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: lab7/assignment-01/fragments/lab5/Dockerfile
+          dockerfile: lab7/assignment-01/lab5/Dockerfile
