@@ -33,7 +33,7 @@ jobs:
         with:
           push: true
           context: lab7/assignment-01/lab5
-          file: Dockerfile
+          file: lab7/assignment-01/lab5/Dockerfile
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/fragments:${{ github.ref_name }}
             ${{ steps.login-ecr.outputs.registry }}/fragments:latest
