@@ -17,12 +17,14 @@
       border-radius: 4px; 
       cursor: pointer; 
       font-weight: bold;
+      margin-right: 5px;
     }
     button:hover { background: #0056b3; }
     button:disabled { background: #ccc; cursor: not-allowed; }
     pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; min-height: 40px; }
     .hidden { display: none; }
     .status-tag { font-weight: bold; color: #28a745; }
+    textarea { width: 100%; height: 80px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -38,9 +40,18 @@
 
     <div class="card">
       <h2>Data Operations</h2>
-      <p>Click below to retrieve your fragments from the backend service:</p>
+      
       <button id="fetch-fragments" disabled>Fetch My Fragments</button>
       
+      <h3>Create New Fragment</h3>
+      <textarea id="fragment-body" placeholder="Enter text content here..."></textarea>
+      <select id="fragment-type">
+        <option value="text/plain">text/plain</option>
+        <option value="application/json">application/json</option>
+        <option value="text/markdown">text/markdown</option>
+      </select>
+      <button id="post-btn" disabled>Create Fragment</button>
+
       <h3>API Response:</h3>
       <pre id="output">No data fetched yet.</pre>
     </div>
@@ -49,59 +60,80 @@
   <script type="module">
     import { login, logout, getUser } from './auth.js';
 
+    // UI Elements
     const loginBtn = document.getElementById('login');
     const logoutBtn = document.getElementById('logout');
     const userStatus = document.getElementById('user-status');
     const fetchBtn = document.getElementById('fetch-fragments');
+    const postBtn = document.getElementById('post-btn');
     const output = document.getElementById('output');
+    
+    // Replace this with your actual EC2 IP
+    const API_URL = 'http://34.229.217.24:8080';
 
     async function init() {
       const user = await getUser();
-
       if (user) {
         userStatus.innerHTML = `<span class="status-tag">Logged in as Michelle</span>`;
         loginBtn.classList.add('hidden');
         logoutBtn.classList.remove('hidden');
         fetchBtn.disabled = false; 
+        postBtn.disabled = false;
       } else {
         userStatus.innerText = 'Not logged in';
         loginBtn.classList.remove('hidden');
         logoutBtn.classList.add('hidden');
         fetchBtn.disabled = true;
+        postBtn.disabled = true;
       }
     }
 
     loginBtn.onclick = () => login();
     logoutBtn.onclick = () => logout();
 
+    // GET Request
     fetchBtn.onclick = async () => {
       const user = await getUser();
       if (!user) return;
-
-      console.log('--- YOUR ID TOKEN ---');
-      console.log(user.idToken);
-
-      output.innerText = "Requesting data from backend...";
+      output.innerText = "Requesting data...";
 
       try {
-        const res = await fetch('http://localhost:8080/v1/fragments', {
+        const res = await fetch(`${API_URL}/v1/fragments`, {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${user.idToken}`,
-          },
+          headers: { Authorization: `Bearer ${user.idToken}` },
         });
-
-        if (!res.ok) {
-          throw new Error(`Server Error ${res.status}: ${res.statusText}`);
-        }
-
         const data = await res.json();
         output.innerText = JSON.stringify(data, null, 2);
-        console.log('Fetch successful:', data);
-
       } catch (err) {
-        console.error('Fetch error:', err);
         output.innerText = `Fetch Failed: ${err.message}`;
+      }
+    };
+
+    // POST Request
+    postBtn.onclick = async () => {
+      const user = await getUser();
+      const body = document.getElementById('fragment-body').value;
+      const type = document.getElementById('fragment-type').value;
+
+      output.innerText = "Creating fragment...";
+
+      try {
+        const res = await fetch(`${API_URL}/v1/fragments`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${user.idToken}`,
+            'Content-Type': type,
+          },
+          body: body,
+        });
+
+        if (!res.ok) throw new Error(`Status: ${res.status}`);
+        
+        const data = await res.json();
+        output.innerText = "Created successfully!\n" + JSON.stringify(data, null, 2);
+        fetchBtn.click(); // Auto-refresh list
+      } catch (err) {
+        output.innerText = `Post Failed: ${err.message}`;
       }
     };
 
