@@ -1,12 +1,25 @@
-﻿.github/
-.vscode/
-coverage/
-node_modules/
-tests/
-!tests/.htpasswd
+﻿# Development and build-time files
+.git
+.gitignore
+.vscode
 .env
 eslint.config.mjs
-.git/
-.gitignore
 .prettier*
 jest*
+
+# Project dependencies and logs
+node_modules
+npm-debug.log
+*.log
+
+# Testing files
+coverage
+tests/unit
+tests/integration
+
+# Build and distribution folders (if applicable)
+dist
+build
+
+# Explicitly include necessary configuration files
+!tests/.htpasswd
