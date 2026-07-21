@@ -1,1 +1,1 @@
-module.exports = require('./memory');
+module.exports = process.env.AWS_S3_BUCKET_NAME ? require('./aws') : require('./memory');

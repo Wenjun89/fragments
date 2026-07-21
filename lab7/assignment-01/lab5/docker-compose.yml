@@ -1,48 +1,50 @@
+version: '3.8'
+
 services:
   # Fragments microservice API server
   fragments:
-    # Use a proper init process (tini)
     init: true
-    # Build the Docker Image using the Dockerfile
-    # and current directory as the build context
     build: .
-    # Environment variables to use
     environment:
-      # Our API will be running on http://localhost:8080
       - API_URL=http://localhost:8080
-      # Use Basic Auth (for running tests, CI)
       - HTPASSWD_FILE=tests/.htpasswd
-      # Use the FRAGMENTS_LOG_LEVEL set in the host environment, or default to info
       - FRAGMENTS_LOG_LEVEL=${FRAGMENTS_LOG_LEVEL:-info}
-      # AWS specific variables
+      
+      # Cognito variables
+      - AWS_COGNITO_POOL_ID=us-east-1_nOJcadJ1N
+      - AWS_COGNITO_CLIENT_ID=24q9oumidh9g96papdh4daicna
+      - AWS_COGNITO_AUTH_FLOW=USER_PASSWORD_AUTH
+      - AWS_COGNITO_DOMAIN=https://us-east-1nojcadj1n.auth.us-east-1.amazoncognito.com
+      - AWS_COGNITO_REDIRECT_URI=http://localhost:1234
+      
+      # Local MiniStack S3 configuration
       - AWS_REGION=us-east-1
-      # Use the MiniStack endpoint for S3
+      - AWS_S3_BUCKET_NAME=fragments
       - AWS_S3_ENDPOINT_URL=http://ministack:4566
-      # Use the DynamoDB local endpoint
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      
+      # DynamoDB local configuration
       - AWS_DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000
-      # Default names for S3 bucket and DynamoDB table
-      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME:-fragments}
       - AWS_DYNAMODB_TABLE_NAME=${AWS_DYNAMODB_TABLE_NAME:-fragments}
-    # Ports to publish
     ports:
       - '8080:8080'
+    depends_on:
+      - ministack
+      - dynamodb-local
 
-  # DynamoDB Local, see: https://hub.docker.com/r/amazon/dynamodb-local
-  dynamodb-local:
-    image: amazon/dynamodb-local
-    ports:
-      # Default port is 8000
-      - '8000:8000'
-    # Run the database in memory
-    command: ['-jar', 'DynamoDBLocal.jar', '-inMemory']
-
-  # MiniStack for S3, see https://ministack.org/docs/
+  # MiniStack S3 local emulator service
   ministack:
-    image: ministackorg/ministack
+    image: ministackorg/ministack:latest
     ports:
       - '4566:4566'
     environment:
-      # We only want to run S3
       - SERVICES=s3
-      # We will use us-east-1
-      - MINISTACK_REGION=us-east-1
+      - DEBUG=1
+
+  # DynamoDB Local
+  dynamodb-local:
+    image: amazon/dynamodb-local
+    ports:
+      - '8000:8000'
+    command: ['-jar', 'DynamoDBLocal.jar', '-inMemory']
