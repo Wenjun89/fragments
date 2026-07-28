@@ -6,14 +6,14 @@ const router = express.Router();
 // Present our API version and author on the root courtesy of package.json
 const { version, author } = require('../../package.json');
 
-// Import authentication middleware
-const authenticate = require('../auth/auth-middleware');
+// Import the configured passport instance from src/auth/index.js
+const passport = require('../auth');
 
 /**
  * Expose all internal api routes under the /v1/ prefix.
  * Secure this entire subdomain using our passport authentication middleware.
  */
-router.use('/v1', authenticate('bearer'), require('./api'));
+router.use('/v1', passport.authenticate('bearer', { session: false }), require('./api'));
 
 /**
  * Health Check Endpoint

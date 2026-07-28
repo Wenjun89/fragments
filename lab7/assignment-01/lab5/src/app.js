@@ -15,16 +15,14 @@ app.use(pino({ logger }));
 // Enable Cross-Origin Resource Sharing (CORS) for API accessibility
 app.use(cors());
 
-// Express middleware to parse incoming JSON payloads
-app.use(express.json());
-
-// Express middleware to parse raw binary data buffers
-// We specify the 'type' to ensure it only intercepts relevant text-based content-types,
-// preventing it from interfering with JSON parsing.
-app.use(express.raw({
-  limit: '10mb',
-  type: ['text/plain', 'text/markdown', 'text/html']
-}));
+// Express middleware to parse raw binary data buffers dynamically FIRST
+// Using a function returning true ensures all incoming payloads are safely captured as Buffers
+app.use(
+  express.raw({
+    limit: '10mb',
+    type: () => true,
+  })
+);
 
 // Initialize Passport middleware for user authentication
 app.use(passport.initialize());
@@ -43,7 +41,9 @@ app.use((err, req, res, next) => {
   const { createErrorResponse } = require('./response');
   
   // Log the error for internal debugging
-  console.error('====== INTERNAL SERVER ERROR ======', err);
+  console.error('====== GLOBAL ERROR CAUGHT ======', err);
+  console.error('Error Status:', err.status);
+  console.error('Error Message:', err.message);
   logger.error({ err }, 'An unhandled exception occurred');
   
   // Return a structured error response to the client
