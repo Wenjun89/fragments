@@ -68,8 +68,8 @@
     const postBtn = document.getElementById('post-btn');
     const output = document.getElementById('output');
     
-    // Replace this with your actual EC2 IP
-    const API_URL = 'http://34.229.217.24:8080';
+    // Read from environment variables with fallback to local development server
+    const API_URL = process.env.API_URL || 'http://localhost:8080';
 
     async function init() {
       const user = await getUser();
