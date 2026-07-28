@@ -1,6 +1,6 @@
 const express = require('express');
 const { Fragment } = require('../../model/fragment');
-const { createResponse, createErrorResponse } = require('../../response');
+const { createSuccessResponse, createErrorResponse } = require('../../response');
 
 const router = express.Router();
 
@@ -12,17 +12,13 @@ router.get('/fragments', async (req, res) => {
     const expand = req.query.expand === '1';
     const fragments = await Fragment.byUser(req.user, expand);
     res.status(200).json(
-      createResponse({
+      createSuccessResponse({
         fragments,
       })
     );
   } catch (err) {
     console.error('Error getting fragments:', err);
-    res.status(500).json({
-      status: 'error',
-      message: err.message,
-      stack: err.stack,
-    });
+    res.status(500).json(createErrorResponse(500, err.message));
   }
 });
 
@@ -37,17 +33,13 @@ router.get('/fragments/:id', async (req, res) => {
     }
 
     res.status(200).json(
-      createResponse({
+      createSuccessResponse({
         fragment,
       })
     );
   } catch (err) {
     console.error('Error getting fragment by id:', err);
-    res.status(500).json({
-      status: 'error',
-      message: err.message,
-      stack: err.stack,
-    });
+    res.status(500).json(createErrorResponse(500, err.message));
   }
 });
 
@@ -62,14 +54,10 @@ router.delete('/fragments/:id', async (req, res) => {
     }
 
     await Fragment.delete(req.user, req.params.id);
-    res.status(200).json(createResponse());
+    res.status(200).json(createSuccessResponse());
   } catch (err) {
     console.error('Error deleting fragment:', err);
-    res.status(500).json({
-      status: 'error',
-      message: err.message,
-      stack: err.stack,
-    });
+    res.status(500).json(createErrorResponse(500, err.message));
   }
 });
 
@@ -89,7 +77,6 @@ router.post('/fragments', async (req, res) => {
   try {
     let data;
 
-    // 直接从 express.raw() 解析出的 req.body 中获取 Buffer 或字符串
     if (Buffer.isBuffer(req.body)) {
       data = req.body;
     } else if (typeof req.body === 'string') {
@@ -109,21 +96,16 @@ router.post('/fragments', async (req, res) => {
     await fragment.setData(data);
     await fragment.save();
 
-    // 设置 Location 响应头供 Hurl 捕获
     res.setHeader('Location', `http://${req.headers.host}/v1/fragments/${fragment.id}`);
     
     res.status(201).json(
-      createResponse({
+      createSuccessResponse({
         fragment,
       })
     );
   } catch (err) {
     console.error('Error creating fragment - Full Error:', err);
-    res.status(500).json({
-      status: 'error',
-      message: err.message,
-      stack: err.stack,
-    });
+    res.status(500).json(createErrorResponse(500, err.message));
   }
 });
 
