@@ -16,14 +16,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: lab7/assignment-01/lab5/package-lock.json
 
       - name: Install dependencies and Run ESLint
         run: |
           npm install
-          npm run lint
+          npx eslint .
         working-directory: lab7/assignment-01/lab5
 
   unit-tests:
@@ -35,14 +35,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: lab7/assignment-01/lab5/package-lock.json
 
       - name: Install dependencies and Run unit tests
         run: |
           npm install
-          npm test
+          npx jest
         working-directory: lab7/assignment-01/lab5
 
   integration-tests:
