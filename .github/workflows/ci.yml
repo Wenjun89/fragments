@@ -23,7 +23,8 @@ jobs:
       - name: Install dependencies and Run ESLint
         run: |
           npm install
-          ./node_modules/.bin/eslint .
+          chmod +x node_modules/.bin/*
+          npm run lint
         working-directory: lab7/assignment-01/lab5
 
   unit-tests:
@@ -42,7 +43,8 @@ jobs:
       - name: Install dependencies and Run unit tests
         run: |
           npm install
-          ./node_modules/.bin/jest
+          chmod +x node_modules/.bin/*
+          npm test
         working-directory: lab7/assignment-01/lab5
 
   integration-tests:
