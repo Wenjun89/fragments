@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const { Fragment } = require('../../model/fragment');
 const { createSuccessResponse, createErrorResponse } = require('../../response');
 
@@ -23,13 +24,44 @@ router.get('/fragments', async (req, res) => {
 });
 
 /**
- * Get a specific fragment by ID
+ * Get a specific fragment by ID (supporting extension conversion like .html, .txt, etc.)
  */
 router.get('/fragments/:id', async (req, res) => {
   try {
-    const fragment = await Fragment.byId(req.user, req.params.id);
+    const parsedId = path.parse(req.params.id);
+    const id = parsedId.name;
+    const ext = parsedId.ext;
+
+    const fragment = await Fragment.byId(req.user, id);
     if (!fragment) {
       return res.status(404).json(createErrorResponse(404, 'Fragment not found'));
+    }
+
+    let data = await fragment.getData();
+
+    if (ext) {
+      const supportedExts = {
+        '.html': 'text/html',
+        '.htm': 'text/html',
+        '.txt': 'text/plain',
+        '.md': 'text/markdown',
+        '.json': 'application/json',
+      };
+
+      const targetContentType = supportedExts[ext];
+      if (!targetContentType || !fragment.formats.includes(targetContentType)) {
+        return res.status(415).json(createErrorResponse(415, `Unsupported conversion format: ${ext}`));
+      }
+
+      if (fragment.type === 'text/markdown' && targetContentType === 'text/html') {
+        const markdownIt = require('markdown-it')();
+        data = markdownIt.render(data.toString());
+        res.setHeader('Content-Type', 'text/html');
+        return res.status(200).send(data);
+      }
+
+      res.setHeader('Content-Type', targetContentType);
+      return res.status(200).send(data);
     }
 
     res.status(200).json(

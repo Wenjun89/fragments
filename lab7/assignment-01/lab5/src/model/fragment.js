@@ -88,7 +88,14 @@ class Fragment {
   }
 
   get formats() {
-    return [this.mimeType];
+    const mime = this.mimeType;
+    if (mime === 'text/markdown') {
+      return ['text/markdown', 'text/html', 'text/plain'];
+    }
+    if (mime === 'text/html' || mime === 'text/plain') {
+      return [mime];
+    }
+    return [mime];
   }
 
   /**
