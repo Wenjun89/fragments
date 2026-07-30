@@ -22,4 +22,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: lab5/Dockerfile
+          dockerfile: lab7/assignment-01/lab5/Dockerfile
