@@ -4,12 +4,23 @@ const helmet = require('helmet');
 const compression = require('compression');
 const passport = require('passport');
 const logger = require('./logger'); 
+const { Fragment } = require('./model/fragment'); 
 
 const app = express();
 
 app.use(helmet());
 app.use(cors());
 app.use(compression());
+
+app.use(express.raw({
+  inflate: true,
+  limit: '5mb',
+  type: (req) => {
+    const contentType = req.headers['content-type'];
+    return Fragment.isSupportedType(contentType);
+  },
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -27,7 +38,7 @@ app.use((req, res, next) => {
     status: 'error',
     error: {
       code: 404,
-      message: `Not Found: ${req.method} ${req.url}`,
+      message: 'Resource not found',
     },
   });
 });

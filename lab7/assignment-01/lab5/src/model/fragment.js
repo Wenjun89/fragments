@@ -26,19 +26,12 @@ class Fragment {
     this.created = created || new Date().toISOString();
     this.updated = updated || new Date().toISOString();
     
-    // Normalize the type to store only the clean MIME type without parameters like charset
     const parsedType = contentType.parse(type);
-    this.type = parsedType.type.toLowerCase();
+    this.type = contentType.format(parsedType);
     
     this.size = size;
   }
 
-  /**
-   * Retrieves all fragments for the given user.
-   * @param {string} ownerId - The hashed email of the user.
-   * @param {boolean} expand - If true, returns full fragment objects.
-   * @returns {Promise<Array<string|Fragment>>}
-   */
   static async byUser(ownerId, expand = false) {
     const results = await listFragments(ownerId, expand);
     return expand && results 
@@ -46,12 +39,6 @@ class Fragment {
       : results || [];
   }
 
-  /**
-   * Retrieves a specific fragment by ID.
-   * @param {string} ownerId - The hashed email of the user.
-   * @param {string} id - The fragment ID.
-   * @returns {Promise<Fragment>}
-   */
   static async byId(ownerId, id) {
     const fragmentData = await readFragment(ownerId, id);
     if (!fragmentData) throw new Error(`Fragment not found: ${id}`);
@@ -83,7 +70,8 @@ class Fragment {
   }
 
   get mimeType() {
-    return this.type;
+    const parsedType = contentType.parse(this.type);
+    return parsedType.type.toLowerCase();
   }
 
   get isText() {
@@ -101,11 +89,6 @@ class Fragment {
     return [mime];
   }
 
-  /**
-   * Validates if the provided content type is supported.
-   * @param {string} value - The Content-Type string.
-   * @returns {boolean}
-   */
   static isSupportedType(value) {
     if (!value) return false;
     try {
