@@ -4,7 +4,7 @@
   "description": "Fragments node.js microservice",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node --env-file=.env src/index.js",
     "test": "jest",
     "test:integration": "jest tests/integration && hurl --test --glob \"tests/hurl/**/*.hurl\"",
     "coverage": "jest --coverage",

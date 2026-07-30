@@ -5,20 +5,20 @@ services:
     init: true
     build: .
     image: fragments:latest
-    container_name: lab5-fragments-1   
+    container_name: lab5-fragments-1 
     environment:
-      - API_URL=http://localhost:8080
+      - API_URL=${API_URL:-http://localhost:8080}
       - HTPASSWD_FILE=tests/.htpasswd
       - FRAGMENTS_LOG_LEVEL=${FRAGMENTS_LOG_LEVEL:-debug} 
       
-      - AWS_COGNITO_POOL_ID=us-east-1_nOJcadJ1N
-      - AWS_COGNITO_CLIENT_ID=24q9oumidh9g96papdh4daicna
-      - AWS_COGNITO_AUTH_FLOW=USER_PASSWORD_AUTH
-      - AWS_COGNITO_DOMAIN=https://us-east-1nojcadj1n.auth.us-east-1.amazoncognito.com
-      - AWS_COGNITO_REDIRECT_URI=http://localhost:1234
+      - AWS_COGNITO_POOL_ID=${AWS_COGNITO_POOL_ID}
+      - AWS_COGNITO_CLIENT_ID=${AWS_COGNITO_CLIENT_ID}
+      - AWS_COGNITO_AUTH_FLOW=${AWS_COGNITO_AUTH_FLOW:-USER_PASSWORD_AUTH}
+      - AWS_COGNITO_DOMAIN=${AWS_COGNITO_DOMAIN}
+      - AWS_COGNITO_REDIRECT_URI=${AWS_COGNITO_REDIRECT_URI}
 
-      - AWS_REGION=us-east-1
-      - AWS_S3_BUCKET_NAME=fragments
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
       - AWS_S3_ENDPOINT_URL=http://ministack:4566
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test

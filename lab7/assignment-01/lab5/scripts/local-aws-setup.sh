@@ -20,7 +20,7 @@ echo 'MiniStack S3 Ready'
 
 # Create our S3 bucket with MiniStack
 echo "Creating MiniStack S3 bucket: fragments"
-aws --endpoint-url=http://localhost:4566 s3api create-bucket --bucket fragments
+aws --endpoint-url=http://localhost:4566 s3api create-bucket --bucket michelle.wei-fragments-v2
 
 # Setup DynamoDB Table with dynamodb-local
 echo "Creating DynamoDB-Local DynamoDB table: fragments"

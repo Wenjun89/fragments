@@ -5,9 +5,6 @@ const { createSuccessResponse, createErrorResponse } = require('../../response')
 
 const router = express.Router();
 
-/**
- * Get a list of fragments for the current user
- */
 router.get('/fragments', async (req, res) => {
   try {
     const expand = req.query.expand === '1';
@@ -23,9 +20,6 @@ router.get('/fragments', async (req, res) => {
   }
 });
 
-/**
- * Get a specific fragment by ID (supporting extension conversion like .html, .txt, etc.)
- */
 router.get('/fragments/:id', async (req, res) => {
   try {
     const parsedId = path.parse(req.params.id);
@@ -71,13 +65,13 @@ router.get('/fragments/:id', async (req, res) => {
     );
   } catch (err) {
     console.error('Error getting fragment by id:', err);
+    if (err.message && err.message.includes('Fragment not found')) {
+      return res.status(404).json(createErrorResponse(404, err.message));
+    }
     res.status(500).json(createErrorResponse(500, err.message));
   }
 });
 
-/**
- * Delete a specific fragment by ID
- */
 router.delete('/fragments/:id', async (req, res) => {
   try {
     const fragment = await Fragment.byId(req.user, req.params.id);
@@ -93,9 +87,6 @@ router.delete('/fragments/:id', async (req, res) => {
   }
 });
 
-/**
- * Create a new fragment
- */
 router.post('/fragments', async (req, res) => {
   console.log('====== POST /fragments ROUTE REACHED ======');
   
@@ -124,9 +115,17 @@ router.post('/fragments', async (req, res) => {
     console.log('Buffer length:', data.length);
     console.log('Buffer content:', data.toString());
 
+    if (type && type.includes('application/json')) {
+      try {
+        JSON.parse(data.toString());
+      } catch (jsonErr) {
+        return res.status(400).json(createErrorResponse(400, 'Invalid JSON format'));
+      }
+    }
+
     const fragment = new Fragment({ ownerId: req.user, type });
     await fragment.setData(data);
-    await fragment.save();
+    await fragment.save(); 
 
     res.setHeader('Location', `http://${req.headers.host}/v1/fragments/${fragment.id}`);
     
@@ -136,7 +135,10 @@ router.post('/fragments', async (req, res) => {
       })
     );
   } catch (err) {
-    console.error('Error creating fragment - Full Error:', err);
+    console.error('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+    console.error('ERROR IN POST /fragments:', err.message);
+    console.error('STACK TRACE:', err.stack);
+    console.error('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
     res.status(500).json(createErrorResponse(500, err.message));
   }
 });

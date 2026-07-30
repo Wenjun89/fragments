@@ -25,7 +25,11 @@ class Fragment {
     this.ownerId = ownerId;
     this.created = created || new Date().toISOString();
     this.updated = updated || new Date().toISOString();
-    this.type = type;
+    
+    // Normalize the type to store only the clean MIME type without parameters like charset
+    const parsedType = contentType.parse(type);
+    this.type = parsedType.type.toLowerCase();
+    
     this.size = size;
   }
 
@@ -79,8 +83,7 @@ class Fragment {
   }
 
   get mimeType() {
-    const { type } = contentType.parse(this.type);
-    return type;
+    return this.type;
   }
 
   get isText() {

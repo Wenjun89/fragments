@@ -1,6 +1,6 @@
 // src/model/data/aws/ddbDocClient.js
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-// Helper library for working with converting DynamoDB types to/from JS
+
 const { DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
 const logger = require('../../../logger');
 
@@ -25,25 +25,24 @@ const getDynamoDBEndpoint = () => {
   }
 };
 
-// Create and configure an Amazon DynamoDB client object.
 const ddbClient = new DynamoDBClient({
-  region: process.env.AWS_REGION,
+  region: process.env.AWS_DYNAMODB_REGION || process.env.AWS_REGION || 'us-east-1',
   endpoint: getDynamoDBEndpoint(),
   credentials: getCredentials(),
 });
 
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, {
   marshallOptions: {
-    // Whether to automatically convert empty strings, blobs, and sets to `null`.
-    convertEmptyValues: false, // false, by default.
-    // Whether to remove undefined values while marshalling.
-    removeUndefinedValues: false, // false, by default.
-    // Whether to convert typeof object to map attribute.
-    convertClassInstanceToMap: true, // we have to set this to `true` for MiniStack
+
+    convertEmptyValues: false, 
+
+    removeUndefinedValues: false, 
+  
+    convertClassInstanceToMap: true, 
   },
   unmarshallOptions: {
-    // Whether to return numbers as a string instead of converting them to native JavaScript numbers.
-    wrapNumbers: false, // false, by default.
+    
+    wrapNumbers: false, 
   },
 });
 

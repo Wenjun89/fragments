@@ -1,55 +1,59 @@
 const express = require('express');
 const cors = require('cors');
-const pino = require('pino-http');
+const helmet = require('helmet');
+const compression = require('compression');
 const passport = require('passport');
-const logger = require('./logger');
-
-// Register Passport strategies for authentication
-require('./auth');
+const logger = require('./logger'); 
 
 const app = express();
 
-// Use pino-http middleware for structured, production-ready request logging
-app.use(pino({ logger }));
-
-// Enable Cross-Origin Resource Sharing (CORS) for API accessibility
+app.use(helmet());
 app.use(cors());
+app.use(compression());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// Express middleware to parse raw binary data buffers dynamically FIRST
-// Using a function returning true ensures all incoming payloads are safely captured as Buffers
-app.use(
-  express.raw({
-    limit: '10mb',
-    type: () => true,
-  })
-);
-
-// Initialize Passport middleware for user authentication
 app.use(passport.initialize());
 
-// Route handling: delegate all requests to the modular routes index
-app.use('/', require('./routes'));
-
-// Catch-all route handler for 404 (Not Found) errors
-app.use((req, res) => {
-  const { createErrorResponse } = require('./response');
-  res.status(404).json(createErrorResponse(404, 'Resource not found'));
+app.use((req, res, next) => {
+  logger.info({ method: req.method, url: req.url }, 'Incoming request intercepted');
+  next();
 });
 
-// Global error handling middleware for 500 (Internal Server Error)
+app.use('/', require('./routes'));
+
+app.use((req, res, next) => {
+  res.status(404).json({
+    status: 'error',
+    error: {
+      code: 404,
+      message: `Not Found: ${req.method} ${req.url}`,
+    },
+  });
+});
+
 app.use((err, req, res, next) => {
-  const { createErrorResponse } = require('./response');
-  
-  // Log the error for internal debugging
-  console.error('====== GLOBAL ERROR CAUGHT ======', err);
-  console.error('Error Status:', err.status);
-  console.error('Error Message:', err.message);
-  logger.error({ err }, 'An unhandled exception occurred');
-  
-  // Return a structured error response to the client
-  res.status(err.status || 500).json(
-    createErrorResponse(err.status || 500, err.message || 'Unable to handle request')
-  );
+  console.error('==================== 捕获到 500 错误 ====================');
+  console.error(err.stack || err);
+  console.error('======================================================');
+
+  logger.error({ err, method: req.method, url: req.url }, 'Global error handler caught an exception');
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  const status = err.status || 500;
+  const message = err.message || 'Internal Server Error';
+
+  res.status(status).json({
+    status: 'error',
+    error: {
+      code: status,
+      message: message,
+      stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
+    },
+  });
 });
 
 module.exports = app;

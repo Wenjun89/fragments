@@ -1,18 +1,28 @@
-// Read environment variables from .env file if available
+process.on('uncaughtException', (err) => {
+  console.error('=== UNCAUGHT EXCEPTION ===', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('=== UNHANDLED REJECTION ===', reason);
+  process.exit(1);
+});
+
 require('dotenv').config();
 
 const logger = require('./logger');
 const app = require('./app');
 
-// Determine server port, defaulting to 8080 if not specified
 const port = process.env.PORT || 8080;
 
-// Start the server to listen for incoming connections
 const server = app.listen(port, () => {
   logger.info(`Server successfully started on port ${port}`);
 });
 
-// Graceful shutdown handling for cloud environment signals
+setInterval(() => {
+
+}, 1000);
+
 process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received. Shutting down gracefully...');
   server.close(() => {
