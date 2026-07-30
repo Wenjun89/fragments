@@ -34,5 +34,5 @@ jobs:
           node-version: '20'
       - run: npm install
         working-directory: lab7/assignment-01/lab5
-      - run: npx jest
+      - run: npm test
         working-directory: lab7/assignment-01/lab5
